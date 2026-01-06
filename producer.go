@@ -163,6 +163,11 @@ func WrapAsyncProducer(saramaConfig *sarama.Config, p sarama.AsyncProducer, opts
 					continue // wait for closeAsyncSig
 				}
 				span := startProducerSpan(cfg, saramaConfig.Version, msg)
+				if !span.IsRecording() {
+					span.End()
+					p.Input() <- msg
+					continue
+				}
 
 				// Create message context, backend message metadata
 				mc := producerMessageContext{
